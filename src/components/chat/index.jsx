@@ -9,6 +9,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 class Chat extends Component {
   state = {
     data: [],
+    newData: [],
     fromDate: new Date(),
     toDate: new Date(),
   };
@@ -34,17 +35,19 @@ class Chat extends Component {
 
   getData = () => {
     api.get("/chats").then((d) => {
-      this.setState({ data: d.data.data });
+      this.setState({ data: d.data.data, newData: d.data.data });
     });
   };
 
-  fetchData = () => {
+  fetchData = async () => {
     const { data, fromDate, toDate } = this.state;
 
-    const newArray =
-      data.length > 0 &&
-      data.filter((d) => d.date >= fromDate && d.date <= toDate);
-    newArray.length > 0 && this.setState({ data: newArray });
+    let newArray = [];
+    data.length > 0 &&
+      data.map(
+        (d) => d.date >= fromDate && d.date <= toDate && newArray.push(d)
+      );
+    newArray.length > 0 && this.setState({ newData: newArray });
   };
 
   clearData = () => {
@@ -54,10 +57,10 @@ class Chat extends Component {
   };
 
   render() {
-    const { data, fromDate, toDate } = this.state;
+    const { newData, fromDate, toDate } = this.state;
     const tableData =
-      data.length > 0 &&
-      data.map((arr, i) => ({
+      newData.length > 0 &&
+      newData.map((arr, i) => ({
         key: arr.id,
         id: arr.websiteId,
         date: arr.date,
@@ -113,7 +116,7 @@ class Chat extends Component {
             <Button type="primary" onClick={this.clearData}>
               Clear Data
             </Button>
-            {data.length > 0 ? (
+            {newData.length > 0 ? (
               <Table columns={chatsColumn} dataSource={tableData} />
             ) : (
               <Skeleton active />
